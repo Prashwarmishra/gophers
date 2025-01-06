@@ -4,6 +4,9 @@ import (
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 type application struct {
@@ -14,28 +17,38 @@ type config struct {
 	addr string
 }
 
-func (a *application) mount() *http.ServeMux {
-	mux := http.NewServeMux()
+func (a *application) mount() http.Handler {
+	r := chi.NewRouter()
 
-	mux.HandleFunc("GET /health", healthCheckHandler)
+	r.Use(middleware.RequestID)
+	r.Use(middleware.RealIP)
+	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
 
-	return mux
+	r.Use(middleware.Timeout(60 * time.Second))
+
+	r.Route("/v1", func(r chi.Router) {
+		r.Get("/health-check", a.healthCheckHandler)
+	})
+
+	return r
 }
 
-func (a *application) run(mux *http.ServeMux) {
-	server := http.Server{
-		Addr: a.config.addr,
+func (app *application) run(mux http.Handler) {
+	server := http.Server {
+		Addr: app.config.addr,
 		Handler: mux,
 		ReadTimeout: time.Second * 10,
 		WriteTimeout: time.Second * 30,
 		IdleTimeout: time.Minute,
-	}	
-
-	log.Printf("Server running on port: %v", a.config.addr)
+	}
+	
+	log.Printf("Server running on port: %v\n", app.config.addr)
 
 	err := server.ListenAndServe()
 
 	if err != nil {
-		panic("Failed to initialize server")
-	}	
+		log.Fatal("err in initializing server:", err)
+		panic("failed to initialize server")
+	}
 }
