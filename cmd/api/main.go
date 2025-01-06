@@ -1,8 +1,10 @@
 package main
 
+import "gophers/internal/env"
+
 func main() {
 	cfg := config{
-		addr: ":8080",
+		addr: env.GetString("ADDR", ":8000"),
 	}
 
 	app := &application{
