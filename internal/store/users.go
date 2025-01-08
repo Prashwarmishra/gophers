@@ -21,15 +21,13 @@ type User struct {
 
 func (s *UsersStorage) Create(context context.Context, user *User) error {
 	query := `
-		INSERT INTO users (
-		email, username, password,
-		) values (?, ?, ?) RETURNING
-		id, created_at, updated_at
-	`
+				INSERT INTO users 
+				(email, username, password) 
+				values (?, ?, ?) RETURNING
+				id, created_at, updated_at
+			 `
 
 	row := s.db.QueryRowContext(context, query, user.Email, user.UserName, user.Password)
 
-	err := row.Scan(&user.ID, &user.CreatedAt, &user.UpdatedAt)
-
-	return err
+	return row.Scan(&user.ID, &user.CreatedAt, &user.UpdatedAt)
 }

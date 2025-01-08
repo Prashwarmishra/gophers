@@ -26,12 +26,11 @@ func (s *PostsStorage) Create(context context.Context, post *Post) error {
 	query := `
 				INSERT into posts 
 				(title, content, tags, user_id) 
-				values (?, ?, ?, ?) 
-				RETURNING id, created_at, updated_at
+				values (?, ?, ?, ?) RETURNING 
+				id, created_at, updated_at
 			`
+
 	row := s.db.QueryRowContext(context, query, post.Title, post.Content, pq.Array(post.Tags), post.UserId)
 
-	err := row.Scan(&post.ID, &post.CreatedAt, &post.UpdatedAt)
-
-	return err
+	return row.Scan(&post.ID, &post.CreatedAt, &post.UpdatedAt)
 }
