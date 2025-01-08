@@ -1,6 +1,7 @@
 package main
 
 import (
+	"gophers/internal/store"
 	"log"
 	"net/http"
 	"time"
@@ -11,6 +12,7 @@ import (
 
 type application struct {
 	config config
+	store store.Storage
 }
 
 type config struct {
@@ -34,10 +36,10 @@ func (a *application) mount() http.Handler {
 	return r
 }
 
-func (app *application) run(mux http.Handler) {
+func (app *application) run(handler http.Handler) {
 	server := http.Server {
 		Addr: app.config.addr,
-		Handler: mux,
+		Handler: handler,
 		ReadTimeout: time.Second * 10,
 		WriteTimeout: time.Second * 30,
 		IdleTimeout: time.Minute,

@@ -1,6 +1,9 @@
 package main
 
-import "gophers/internal/env"
+import (
+	"gophers/internal/env"
+	"gophers/internal/store"
+)
 
 func main() {
 	cfg := config{
@@ -9,6 +12,7 @@ func main() {
 
 	app := &application{
 		config: cfg,
+		store: store.NewStorage(nil),
 	}
 
 	app.run(app.mount())
